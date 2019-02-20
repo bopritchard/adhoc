@@ -1,0 +1,75 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+    <script type="text/javascript">
+
+      $(document).ready(
+        function(){
+          $(searchCriteria).on( 'input', runSearch )
+        })
+
+      function runSearch()
+      {
+          var criteria = $(searchCriteria).val();
+          if ( criteria.length < 3 ) {
+            return;
+          }
+          var base_url = "https://microservice.emds.com/data/npis/type_ahead/";
+          var token = $(myToken).val();
+          var city = $(myCity).val();
+          var state = $(myState).val();
+          var zip = $(myZip).val();
+          var parameters = "?product_token=" + token + "&city=" + city + "&state=" + state + "&zip=" + zip
+          var request_url = base_url + parameters + "&name=" + criteria + "&npiParser=npiParser" ;
+          $(url).text( request_url );
+          $(output).text( "getting data..." );
+          var ajaxTime= new Date().getTime();
+          $.ajax({
+              url: request_url,
+              cache: false,
+              type: 'GET',
+              dataType: 'jsonp',
+              jsonpCallback: "npiParser",
+              contentType:    'application/json',
+              success: function( data )
+              {
+                var totalTime = new Date().getTime()-ajaxTime;
+                $(output).text( npiParser(data) );
+                $(timer).text( "Time: " + totalTime + "ms");
+
+              },
+              error: function(jqXHR, textStatus, errorThrown)
+              {
+                console.log(jqXHR, textStatus, errorThrown);
+              },
+          });
+
+          function npiParser(response){
+            var data = JSON.stringify(response, null, 2)
+            return data
+          }
+
+
+      }
+
+    </script>
+  </head>
+
+  <body>
+    <h3>NPI Type Ahead Search Test</h3>
+    <form>
+          <p> REQUIRED parameters</p>
+          product_token: <input id="myToken" type="text" placeholder="myToken" required>
+        </br>name: <input id="searchCriteria" type="text" placeholder="Search..." required>(Starts searching after 3rd character)
+          <p> Optional parameters to narrow down your results</p>
+          city: <input id="myCity" type="text" placeholder="City">
+          </br>state: <input id="myState" type="text" placeholder="State">
+          </br>zip: <input id="myZip" type="text" placeholder="ZIP">
+    </form>
+    <pre id="url"></pre>
+    <pre id="timer"></pre>
+    <pre id="output"></pre>
+  </body>
+</html>
